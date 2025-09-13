@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 40px 10%;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .text-block {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        p.description {
+            font-size: 16px;
+            color: #444;
+            margin: 0;
+        }
+
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        figure {
+            text-align: center;
+            margin: 0;
+            flex: 1;
+        }
+
+        figure:not(:last-child) {
+            margin-right: 18px;
+        }
+
+        img {
+            width: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        figcaption {
+            margin-top: 4px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .caption-line {
+            margin: 2px 0;
+        }
+
+        .section-spacing {
+            margin-top: 60px;
+        }
+
+        hr.separator {
+            border: none;
+            border-top: 2px solid #ccc;
+            margin: 60px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Project 1 Section -->
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Project 1</h1>
+            <p class="description">
+                In this project, we colorized the digitized glass plate negatives of Sergei Mikhailovich Prokudin-Gorskii, an early pioneer of color photography in Russia. Each plate contains three grayscale exposures taken through red, green, and blue filters. Our goal was to align these three channels and compose them into a single RGB image while minimizing visual artifacts.
+            </p>
+        </div>
+    </div>
+
+    <!-- Single Scale Alignment Section -->
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Single Scale Alignment</h1>
+            <p class="description">
+                I implemented single scale alignment by first cropping 20% of the outer pixels to avoid lens imperfections and photo plate degradations near the edges. I then iterated through all offsets within a radius of 15 pixels and calculated the L2 norm (Euclidean distance) between each offset image (R or G channels) and the reference (B channel) to find the best offset that minimized the L2 norm. Finally, I shifted the R and G channels by these offsets and stacked them on top of the B channel to produce the aligned color images shown below.
+            </p>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="out_cathedral_jpg.jpg" alt="cathedral">
+                <figcaption>
+                    <div class="caption-line">cathedral.jpg</div>
+                    <div class="caption-line">red offset: (12, 3)</div>
+                    <div class="caption-line">green offset: (5, 2)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_monastery_jpg.jpg" alt="monastery">
+                <figcaption>
+                    <div class="caption-line">monastery.jpg</div>
+                    <div class="caption-line">red offset: (3, 2)</div>
+                    <div class="caption-line">green offset: (-3, 2)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_tobolsk_jpg.jpg" alt="tobolsk">
+                <figcaption>
+                    <div class="caption-line">tobolsk.jpg</div>
+                    <div class="caption-line">red offset: (7, 3)</div>
+                    <div class="caption-line">green offset: (3, 3)</div>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <!-- Multi Scale Alignment Section -->
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Multi Scale Alignment</h1>
+            <p class="description">
+                Single scale alignment is prohibitively expensive for large (.tif) images, so I implemented multi scale alignment using image pyramids. I first cropped 20% of the outer pixels to avoid lens imperfections and edge degradations. I created image pyramids by repeatedly downsampling both the images and their references (using 4 levels). Starting from the coarsest resolution, I computed the best offsets for each channel using the same L2 norm approach as in single scale alignment. After computing offsets at each scale, I progressively refined them at higher resolutions. Specifically, the offsets from the coarser scale were doubled and used as the starting point for the next finer scale, where the offset search was repeated. This process continued until reaching the full-size images. Finally, the R and G channels were shifted according to the final offsets and stacked on the B channel to produce the aligned color images shown below. Using this pyramid-based multi scale approach significantly reduced the computation time compared to single scale alignment while maintaining alignment accuracy.
+            </p>
+        </div>
+
+        <!-- Multi Scale Image Rows -->
+        <div class="image-row">
+            <figure>
+                <img src="out_church_tif_pyramid.jpg" alt="church">
+                <figcaption>
+                    <div class="caption-line">church.tif</div>
+                    <div class="caption-line">red offset: (58, -4)</div>
+                    <div class="caption-line">green offset: (25, 4)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_harvesters_tif_pyramid.jpg" alt="harvesters">
+                <figcaption>
+                    <div class="caption-line">harvesters.tif</div>
+                    <div class="caption-line">red offset: (123, 14)</div>
+                    <div class="caption-line">green offset: (59, 17)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_barracks_tif_pyramid.jpg" alt="barracks">
+                <figcaption>
+                    <div class="caption-line">barracks.tif</div>
+                    <div class="caption-line">red offset: (73, 1)</div>
+                    <div class="caption-line">green offset: (11, 1)</div>
+                </figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="out_icon_tif_pyramid.jpg" alt="icon">
+                <figcaption>
+                    <div class="caption-line">icon.tif</div>
+                    <div class="caption-line">red offset: (89, 23)</div>
+                    <div class="caption-line">green offset: (40, 17)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_italil_tif_pyramid.jpg" alt="italil">
+                <figcaption>
+                    <div class="caption-line">italil.tif</div>
+                    <div class="caption-line">red offset: (76, 35)</div>
+                    <div class="caption-line">green offset: (38, 21)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_lastochikino_tif_pyramid.jpg" alt="lastochikino">
+                <figcaption>
+                    <div class="caption-line">lastochikino.tif</div>
+                    <div class="caption-line">red offset: (75, -8)</div>
+                    <div class="caption-line">green offset: (-3, -2)</div>
+                </figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="out_lugano_tif_pyramid.jpg" alt="lugano">
+                <figcaption>
+                    <div class="caption-line">lugano.tif</div>
+                    <div class="caption-line">red offset: (93, -29)</div>
+                    <div class="caption-line">green offset: (41, -16)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_melons_tif_pyramid.jpg" alt="melons">
+                <figcaption>
+                    <div class="caption-line">melons.tif</div>
+                    <div class="caption-line">red offset: (178, 13)</div>
+                    <div class="caption-line">green offset: (81, 10)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_self_portrait_tif_pyramid.jpg" alt="self portrait">
+                <figcaption>
+                    <div class="caption-line">self_portrait.tif</div>
+                    <div class="caption-line">red offset: (176, 37)</div>
+                    <div class="caption-line">green offset: (78, 29)</div>
+                </figcaption>
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="out_siren_tif_pyramid.jpg" alt="siren">
+                <figcaption>
+                    <div class="caption-line">siren.tif</div>
+                    <div class="caption-line">red offset: (96, -24)</div>
+                    <div class="caption-line">green offset: (49, -5)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_three_generations_tif_pyramid.jpg" alt="three generations">
+                <figcaption>
+                    <div class="caption-line">three_generations.tif</div>
+                    <div class="caption-line">red offset: (110, 12)</div>
+                    <div class="caption-line">green offset: (50, 14)</div>
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img src="out_sacks_tif_pyramid.jpg" alt="sacks">
+                <figcaption>
+                    <div class="caption-line">sacks.tif</div>
+                    <div class="caption-line">red offset: (123, 16)</div>
+                    <div class="caption-line">green offset: (53, 24)</div>
+                </figcaption>
+            </figure>
+        </div>
+
+        <!-- Gradient Edge Detectors Section -->
+<div class="content section-spacing">
+    <div class="text-block">
+        <h1>Gradient Edge Detectors</h1>
+        <p class="description">
+            Multi-scale alignment worked for all images except emir.tif, which remained misaligned (see below) and required the use of gradient-based alignment. For each image channel, I applied the Sobel operator to calculate the gradient magnitude by combining the horizontal and vertical gradients, effectively creating an edge-detected version of the image. I then aligned the channels using the same approach as before, but based on these gradients, since edges are less sensitive to variations in lighting or color than raw intensities. Now emir.tif is correctly aligned!
+        </p>
+    </div>
+
+    <div class="image-row">
+        <figure>
+            <img src="out_emir_tif_pyramid.jpg" alt="emir no gradient">
+            <figcaption>
+                <div class="caption-line">alignment of emir.tif without edge detection</div>
+                <div class="caption-line">red offset: (137, -211)</div>
+                <div class="caption-line">red offset: (49, 24)</div>
+            </figcaption>
+        </figure>
+
+        <figure>
+            <img src="out_emir_tif_pyramid_gradient.jpg" alt="emir_gradient">
+            <figcaption>
+                <div class="caption-line">alignment of emir.tif with edge detection</div>
+                <div class="caption-line">red offset: (107, 40)</div>
+                <div class="caption-line">green offset: (49, 24)</div>
+            </figcaption>
+        </figure>
+    </div>
+</div>
+    </div>
