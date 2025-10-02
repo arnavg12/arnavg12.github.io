@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 40px 10%;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .text-block {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        p.description {
+            font-size: 16px;
+            color: #444;
+            margin: 0;
+        }
+
+        p.formula {
+            font-size: 16px;
+            color: #444;
+            margin: 15px;
+            text-align: center;
+        }
+
+        .image-row {
+            display: flex;
+            align-items: center; /* vertically center arrow with images */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        figure {
+            margin: 0;
+            margin-inline-end: 0px;
+        }
+
+        figure:not(:last-child) {
+            margin-right: 18px;
+        }
+
+        img {
+            height: 250px;
+        }
+
+        .hybrid1 {
+            height: 290px;
+        }
+
+        .hybrid2 {
+            height: 500px;
+        }
+
+        .hybrid3 {
+            height: 290px;
+        }
+
+        .blend {
+            height: 225px;
+        }
+
+        .dfo {
+            height: 248px;
+        }
+
+        .dgf {
+            height: 248px;
+        }
+
+        .blend2 {
+            height: 313px;
+            margin-left: 27px;
+        }
+
+        .blend3 {
+            height: 417px;
+            margin-left: 27px;
+        }
+
+        .blend4 {
+            height: 231px;
+            margin-left: 27px;
+        }
+
+        .hybrid4 {
+            height: 254px;
+            margin-left: 27px;
+        }
+
+        .sharp {
+            height: 296px;
+            margin-left: 27px;
+        }
+
+        figcaption {
+            margin-top: 4px;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+        }
+
+        .caption-line {
+            margin: 2px 0;
+        }
+
+        .section-spacing {
+            margin-top: 60px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Project 2</h1>
+            <p class="description">
+                In this project, we used convolution and Gaussian filters to sharpen images, create hybrid images by combining frequency components, and blend images smoothly.
+            </p>
+        </div>
+    </div>
+
+    <div class="content section-spacing">
+  <div class="text-block">
+    <h1>Convolutions from Scratch</h1>
+    <p class="description">
+        In this section, we implement convolution with zero padding using both four and two loops (see code below). We compared our functions with scipy’s convolve2d and found them to be equivalent. The runtimes varied greatly however (30s with four loops, 7s with two loops, 0.2s with convolve2d) and we found that convolve2d also offers different padding types (not just zero) like symmetric padding. Below, we display an image of a crow convolved using the two loop implementation with a box filter and the finite difference operators Dx and Dy.
+    </p>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="four_loops.jpg" alt="four_loops" class="dfo">
+  </figure>
+  <figure>
+    <img src="two_loops.jpg" alt="two loops" class="dfo">
+  </figure>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="1_1.jpg" alt="1_1" class="dfo">
+  </figure>
+</div>
+  </div>
+
+    <div class="content section-spacing">
+  <div class="text-block">
+    <h1>Finite Difference Operator</h1>
+    <p class="description">
+        In this section, we explore basic edge detection using finite difference operators. First we compute the horizontal and vertical edges of the image by convolving the image with the finite difference kernels Dx and Dy (the partial derivatives). Next we constructed the gradient magnitude image using the Euclidean norm of these two derivatives. Now to produce a binary edge map, we applied a threshold; we selected 75 qualitatively since this threshold removed most of the noise and background while retaining the edges in the main figure and camera. Below we show the horizontal and vertical gradient images, the gradient magnitude image, and the final binary edge map:
+    </p>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="1_2.jpg" alt="1_2" class="dfo">
+  </figure>
+</div>
+  </div>
+
+  <div class="content section-spacing">
+  <div class="text-block">
+    <h1>Derivative of Gaussian Filter</h1>
+    <p class="description">
+        We noted that the edge map generated using only the difference operator above was somewhat noisy. In this section, we first smooth the image by convolving it with a Gaussian filter (with kernel size 19) before repeating the same edge detection process as in the previous section. We observe that the resulting binary edge map is significantly cleaner, with more clearly defined edge lines and much less noise.
+    </p>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="1_3_1.jpg" alt="1_3_1" class="dfo">
+  </figure>
+</div>
+<div class="text-block">
+    <p class="description">
+    Instead of performing two separate convolutions—first smoothing the image with a Gaussian and then applying the finite difference operator—we achieve the same result in a single step by constructing Derivative of Gaussian (DoG) filters. We do so by convolving the Gaussian with Dx and Dy; we can then apply these DoG filters directly to the image. We see these DoG filters displayed below; we also verify the equivalence of this method with the separate convolution method (the edge maps above and below are the same)!
+</p>
+  </div>
+<div class="image-row">
+  <figure>
+    <img src="1_3_2.jpg" alt="1_3_2" class="dgf">
+  </figure>
+</div>
+</div>
+  <div class="image-row">
+  <figure>
+    <img src="1_3_3.jpg" alt="1_3_3" class="dfo">
+  </figure>
+</div>
+  </div>
+
+
+    <div class="content section-spacing">
+  <div class="text-block">
+    <h1>Image Sharpening</h1>
+    <p class="description">
+        In this section, we sharpen images using the unsharp masking technique. 
+        This involves first convolving the image with a Gaussian filter (with kernel size 9) to create a blurred version.
+        We then subtract this blurred image from the original, isolating the high frequencies, primarily edges (this is essentially a high-pass filter).
+        Finally we scale the high frequencies by a factor 𝛼 and then add them back to the original image, resulting in a sharper final output.
+        Below we see a blurry Taj Mahal image and two different sharpened versions with 𝛼 0.5 and 1.5:
+    </p>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="taj.jpg" alt="taj" class="blend2">
+    <figcaption>
+      <div class="caption-line">Original Taj Mahal</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="sharp_taj.jpg" alt="sharp taj" class="blend2">
+    <figcaption>
+      <div class="caption-line">Sharp Taj Mahal (𝛼 = 0.5)</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="sharper_taj.jpg" alt="sharper taj" class="blend2">
+    <figcaption>
+      <div class="caption-line">Sharper Taj Mahal (𝛼 = 1.5)</div>
+    </figcaption>
+  </figure>
+</div>
+<div class="text-block">
+    <p class="description">
+        We can see how the image with 𝛼 = 1.5 appears significantly sharper and has more contrast (darker lines and more definition in the image) than the one with 
+        α = 0.5, but also starts to show more pronounced edges and slight artifacts due to over-sharpening.
+        To further demonstrate the unsharp masking process, below we display a blurry owl image, its high frequencies, and the sharpened version of the image:
+    </p>
+  </div>
+  <div class="image-row">
+  <figure>
+    <img src="owl.jpg" alt="owl" class="sharp">
+    <figcaption>
+      <div class="caption-line">Original Owl</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="high_owl.jpg" alt="high owl" class="sharp">
+    <figcaption>
+      <div class="caption-line">High Frequencies of Owl</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="sharp_owl.jpg" alt="sharp owl" class="sharp">
+    <figcaption>
+      <div class="caption-line">Sharp Owl (𝛼 = 1.0)</div>
+    </figcaption>
+  </figure>
+</div>
+  </div>
+
+    <div class="content section-spacing">
+  <div class="text-block">
+    <h1>Hybrid Images</h1>
+    <p class="description">
+      The goal of this section was to create hybrid images which look like two different images at different distances by combining the low frequencies of one image with the high frequencies of another, following the approach described in the SIGGRAPH 2006 paper by Oliva, Torralba, and Schyns. We start by aligning the images using two-point mappings to account for translation and rotation, ensuring that their key features overlap meaningfully (below we use the left eye and nose as key features).
+    
+      Once the images are aligned, we convolve the first image with a Gaussian filter to extract its low-frequency components. We compute the high-frequency components of the second image by subtracting the Gaussian blurred version from the original. For each image pair, we manually determined the frequency cutoffs by experimentation. Below we see this process in action to create the classic Derek Nutmeg hybrid image:
+    </p>
+  </div>
+
+  <div class="image-row">
+  <figure>
+    <img src="derek.jpg" alt="derek" class="hybrid1">
+    <img src="nutmeg.jpg" alt="nutmeg" class="hybrid1">
+    <figcaption>
+      <div class="caption-line">Original Derek and Nutmeg</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="derek_align.jpg" alt="derek aligned" class="hybrid1">
+    <img src="nutmeg_align.jpg" alt="nutmeg aligned" class="hybrid1">
+    <figcaption>
+      <div class="caption-line">Aligned Derek and Nutmeg</div>
+    </figcaption>
+  </figure>
+</div>
+
+<div class="image-row">
+  <figure>
+    <img src="derek_low.jpg" alt="derek low" class="hybrid2">
+    <figcaption>
+      <div class="caption-line">Low Frequencies of Derek</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="nutmeg_high.jpg" alt="nutmeg high" class="hybrid2">
+    <figcaption>
+      <div class="caption-line">High Frequencies of Nutmeg</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="derek_nutmeg.jpg" alt="hybrid both" class="hybrid2">
+    <figcaption>
+      <div class="caption-line">Hybrid Derek Plus Nutmeg</div>
+    </figcaption>
+  </figure>
+</div>
+
+  <div class="text-block">
+    <p class="description">
+      Below we look at how the hybrid image was created in the context of Fourier Transform and log frequency spectra. In the frequency domain, the bright center and horizontal and vertical lines of each spectrum represent low frequencies, while the thinner diagonal lines and edges represent high frequencies. On the left, we see the spectra of the aligned images, where Derek’s image contains more low-frequency content and Nutmeg’s contains more high-frequency details. A low-pass Gaussian is applied to Derek’s image to retain only the coarse structure, while a high-pass filter is applied to Nutmeg’s image to isolate finer details. The final hybrid spectrum on the right combines these two: Derek’s low frequencies in the center, and Nutmeg’s high frequencies in the outer regions.
+    </p>
+  </div>
+
+  <div class="image-row">
+  <figure>
+    <img src="fourier.png" alt="fourier of images" class="hybrid3">
+  </figure>
+</div>
+
+<div class="text-block">
+    <p class="description">
+      In addition to Derek and Nutmeg, we used this technique of creating hybrid images using low and high pass filters on John Wick and Davy Jones as well as a cauliflower and brain to produce the results below:
+    </p>
+  </div>
+<div class="image-row">
+  <figure>
+    <img src="wick.jpg" alt="wick" class="blend2">
+    <figcaption>
+      <div class="caption-line">Original John Wick</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="davy.jpg" alt="davy" class="blend2">
+    <figcaption>
+      <div class="caption-line">Original Davy Jones</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="davy_wick.jpg" alt="davy wick" class="blend2">
+    <figcaption>
+      <div class="caption-line">Hybrid Davy Wick</div>
+    </figcaption>
+  </figure>
+</div>
+
+<div class="image-row">
+  <figure>
+    <img src="cauli.jpg" alt="cauli" class="hybrid4">
+    <figcaption>
+      <div class="caption-line">Original Cauliflower</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="brain.jpg" alt="brain" class="hybrid4">
+    <figcaption>
+      <div class="caption-line">Original Brain</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="brain_cauli.jpg" alt="brain cauli" class="hybrid4">
+    <figcaption>
+      <div class="caption-line">Hybrid Cauliflower Brain</div>
+    </figcaption>
+  </figure>
+</div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Multi-Resolution Blending</h1>
+            <p class="description">
+                This section focuses on seamlessly blending two images—such as the apple and orange shown below—using the multi-resolution blending technique introduced by Burt and Adelson in their 1983 paper.
+                We begin by constructing Gaussian stacks for both images by repeatedly convolving with a Gaussian filter, progressively blurring the image at each level to capture increasingly lower frequencies.
+                Using these, we next generate Laplacian stacks (i.e. frequency bands) for the images.
+                Each Laplacian level is obtained by subtracting one Gaussian level from the next lower-resolution level in the Gaussian stack.
+                The final Laplacian level is simply the final Gaussian level. The Gaussian and Laplacian stacks we computed for the apple and orange images are shown below:
+            </p>
+        </div>
+
+
+        <div class="image-row">
+            <figure>
+                <img src="apple_gauss.jpeg" alt="apple gauss" class = "blend">
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="apple_stack.jpeg" alt="apple stack" class = "blend">
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="orange_gauss.jpeg" alt="orange gauss" class = "blend">
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="orange_stack.jpeg" alt="orange stack" class = "blend">
+            </figure>
+        </div>
+
+        <div class="text-block">
+            <p class="description">
+                Now that we have the Laplacian stacks for both images, we create a mask (linear in this case) that defines which parts of each image to keep.
+                To ensure a smooth transition, we construct a Gaussian stack of the mask, gradually blurring the mask at each level.
+                We then combine the Laplacian stacks of the apple and orange images with the Gaussian mask stack. 
+                At each level, we compute the blended Laplacian as:
+            </p>
+            <p class = "formula">
+                blend = mask × img₁ + (1 - mask) × img₂
+            </p>
+            <p class="description">
+                We display the Gaussian stack of masks and the Laplacian combined stack we calculated using this formula below:
+            </p>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="mask_stack.jpeg" alt="mask stack" class = "blend">
+            </figure>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="combined_stack.jpeg" alt="combined stack" class = "blend">
+            </figure>
+        </div>
+
+        <div class="text-block">
+            <p class="description">
+                Finally, we collapse the blended Laplacian stack by summing its levels to reconstruct the final, seamlessly blended image!
+                Below, we see the original apple and orange images and the blended oraple!
+            </p>
+        </div>
+
+        <div class="image-row">
+  <figure>
+    <img src="apple.jpeg" alt="apple" class="blend2">
+    <figcaption>
+      <div class="caption-line">Original Apple</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="orange.jpeg" alt="orange" class="blend2">
+    <figcaption>
+      <div class="caption-line">Original Orange</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="oraple.jpeg" alt="oraple" class="blend2">
+    <figcaption>
+      <div class="caption-line">Blended Oraple</div>
+    </figcaption>
+  </figure>
+</div>
+<div class="text-block">
+            <p class="description">
+                Below we display additional results from blending Batman and Joker as well as blending the Sun and Milky Way (using a nonlinear mask):
+            </p>
+        </div>
+<div class="image-row">
+  <figure>
+    <img src="joker.jpg" alt="joker" class="blend3">
+    <figcaption>
+      <div class="caption-line">Original Joker</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="batman.jpg" alt="batman" class="blend3">
+    <figcaption>
+      <div class="caption-line">Original Batman</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="joker_batman.jpg" alt="joker + batman" class="blend3">
+    <figcaption>
+      <div class="caption-line">Blended Joker + Batman</div>
+    </figcaption>
+  </figure>
+</div>
+<div class="image-row">
+  <figure>
+    <img src="sun.jpg" alt="sun" class="blend4">
+    <figcaption>
+      <div class="caption-line">Original Sun</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="milky.jpg" alt="milky" class="blend4">
+    <figcaption>
+      <div class="caption-line">Original Milky Way</div>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <img src="sun_milky.jpg" alt="sun + milky" class="blend4">
+    <figcaption>
+      <div class="caption-line">Blended Sun + Milky Way</div>
+    </figcaption>
+  </figure>
+</div>
+    </div>
