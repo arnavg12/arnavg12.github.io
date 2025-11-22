@@ -96,7 +96,7 @@
         <div class="text-block">
             <h1>Project 3A</h1>
             <p class="description">
-                In this project, we create mosaics from images by manually selecting correspondences, recovering homographies, warping images accordingly, and blending them together.
+                In the first part of the project, we create mosaics from images by manually selecting correspondences, recovering homographies, warping images accordingly, and blending them together.
             </p>
         </div>
     </div>
@@ -354,5 +354,198 @@
         </div>
 
     </div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Project 3B</h1>
+            <p class="description">
+                In the second part of the project, we automatically stitch images using the techniques in the MOPS paper: detecting Harris corners, extracting feature descriptors, finding correspondences between images using the Lowe ratio test, and eliminating outlier matches using RANSAC.
+            </p>
+        </div>
+    </div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Harris Corner Detection</h1>
+            <p class="description">
+                In this section, we first determined an initial set of corners using the Harris corner detection algorithm (provided). This returned a set of corner points and their strengths. We then applied adaptive non-maximal supression (ANMS). For each corner, we computed the suppression radius or the distance to the nearest stronger corner (by a certain factor). For the strongest corner, we set suppression radius to infinity. We select the n corners with the largest suppression radii, where 
+                n is the desired number of corners. The resulting corners are both strong and evenly distributed across the image. Below, we visualize the results of Harris corner detection with and without ANMS (n = 100) on a sample image.
+             </p>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="display1.jpg" alt="calculations" class = "recover1">
+            </figure>
+        </div>
+
+    </div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Feature Descriptor Extraction</h1>
+            <p class="description">
+                In this section, we extracted descriptors for each feature by first retrieving the 40×40 window around each point of interest. We then resized, normalized, and flattened each window to obtain the feature descriptors. Below, we visualize the descriptors for three corners in the sample image:
+             </p>
+        </div>
+
+        <div class="image-row">
+            <figure>
+                <img src="display2.jpg" alt="calculations" class = "recover1">
+            </figure>
+        </div>
+
+    </div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>Feature Matching</h1>
+            <p class="description">
+                In this section, given two images, we extracted features and corresponding descriptors for both using the methods detailed above.
+                For every feature in one image, we determined its two nearest descriptor matches in the other image and applied the Lowe ratio test, which accepts a match only if the closest match is significantly better than the second-closest.
+                We then returned all matches between the two images. Below we visualize the matches found between two sample images:</p>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="display3.jpg" alt="calculations" class = "recover1">
+            </figure>
+        </div>
+
+    </div>
+
+    <div class="content section-spacing">
+        <div class="text-block">
+            <h1>RANSAC for Robust Homography</h1>
+            <p class="description">
+                In this section, given the matches between two images, we recover the homography that maps one set of points to the other, using RANSAC to remove outlier correspondences. The RANSAC loop works by randomly sampling four matched points to compute a candidate homography, counting how many matches agree with this estimate (the inliers), keeping the model with the largest inlier set, and then recomputing the homography using all of those inliers. We then use this homography to warp and blend the images, producing mosaics by adapting our code from Part A.
+                Below, we show both manually stitched and automatically stitched mosaics generated using the techniques from Parts A and B:
+            </p>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="kitchen5.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Kitchen 1</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="kitchen3.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Kitchen 2</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="kitchen1.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Kitchen 3</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="kitchen2.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Kitchen 4</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="kitchen4.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Kitchen 5</div>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="kitchen_auto.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Automatically Stitched Kitchen Mosaic</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="kitchen_manual.jpg" alt="kitchen" class = "kitchen1">
+                <figcaption>
+                    <div class="caption-line">Manually Stitched Kitchen Mosaic</div>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="etch4.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Etcheverry 1</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="etch3.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Etcheverry 2</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="etch2.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Etcheverry 3</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="etch1.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Etcheverry 4</div>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="etch_auto.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Automatically Stitched Etcheverry Mosaic</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="etch_manual.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Manually Stitched Etcheverry Mosaic</div>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="gold1.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Goldman 1</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="gold2.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Goldman 2</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="gold3.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Goldman 3</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="gold4.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Goldman 4</div>
+                </figcaption>
+            </figure>
+        </div>
+        <div class="image-row">
+            <figure>
+                <img src="gold_auto.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Automatically Stitched Goldman Mosaic</div>
+                </figcaption>
+            </figure>
+            <figure>
+                <img src="gold.jpg" alt="kitchen" class = "etch1">
+                <figcaption>
+                    <div class="caption-line">Manually Stitched Goldman Mosaic</div>
+                </figcaption>
+            </figure>
+        </div>
 
     </div>
