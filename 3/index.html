@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 5</title>
+<style>
+  body {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 16px 80px;
+    font-family: Georgia, serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #222;
+    background: #fff;
+  }
+  h1 { font-weight: normal; font-size: 2.2rem; margin-bottom: 8px; }
+  h2 { font-weight: normal; font-size: 1.4rem; margin-top: 48px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  figure { margin: 16px 0 24px; }
+  figcaption { font-size: 14px; color: #666; text-align: center; margin-top: 6px; }
+  img { width: 100%; display: block; }
+  .row { display: flex; gap: 16px; }
+  .row figure { flex: 1; }
+  @media (max-width: 600px) { .row { flex-direction: column; } }
+  .part { font-size: 1.9rem; font-weight: normal; margin-top: 72px; border-bottom: 2px solid #222; padding-bottom: 6px; }
+  .prompt { font-family: monospace; font-size: 15px; background: #f3f3f3; padding: 1px 5px; border-radius: 3px; }
+  .hybrid { display: flex; align-items: flex-end; gap: 24px; }
+  .hybrid figure { margin: 0; }
+  .hybrid .near { flex: 1; max-width: 420px; }
+  .hybrid .far img { width: 72px; }
+  .ph {
+    min-height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    background: #f3f3f3; border: 2px dashed #bbb; border-radius: 6px;
+    font-family: monospace; font-size: 13px; color: #777;
+  }
+</style>
+</head>
+<body>
+
+<h1>Project 5</h1>
+<p>
+  In Part A, I used a pretrained flow model to denoise, generate, and edit images, including
+  text-guided edits, visual anagrams, and hybrid images. In Part B, I trained my own flow matching model on
+  MNIST from scratch.
+</p>
+
+<h1 class="part">Project 5A: Exploring the Power of Flow Models</h1>
+
+<h2>Constructing Noisy Training Inputs</h2>
+<p>
+  I made noisy images by interpolating between Gaussian noise and my clean image using the formula x<sub>t</sub> = (1 &minus; t)&epsilon; + t x.
+  At t = 0, the image is pure noise, and at t = 1, it is the clean image.
+</p>
+<figure><img src="images/a_forward.png" alt="Forward process on penguin image"></figure>
+
+<h2>Classical Denoising</h2>
+<p>
+  As a baseline, I divided by t and applied a Gaussian blur, using stronger blur for noisier images. It removes most of the noise but removes image detail as well.
+</p>
+<figure><img src="images/a_blur_025.png" alt="Blur t=0.25"><figcaption>t = 0.25 (&sigma; = 8)</figcaption></figure>
+<figure><img src="images/a_blur_050.png" alt="Blur t=0.5"><figcaption>t = 0.5 (&sigma; = 4)</figcaption></figure>
+<figure><img src="images/a_blur_075.png" alt="Blur t=0.75"><figcaption>t = 0.75 (&sigma; = 2)</figcaption></figure>
+
+<h2>One-Step Denoising</h2>
+<p>
+  Using the prompt <span class="prompt">a high quality photo</span>, I predicted the velocity once and jumped
+  straight to the clean image using the formula x&#770;<sub>1</sub> = x<sub>t</sub> + (1 &minus; t) v. It's far sharper than
+  blurring, but it loses fine detail.
+</p>
+<figure><img src="images/a_one_step_025.png" alt="One-step t=0.25"><figcaption>t = 0.25</figcaption></figure>
+<figure><img src="images/a_one_step_050.png" alt="One-step t=0.5"><figcaption>t = 0.5</figcaption></figure>
+<figure><img src="images/a_one_step_075.png" alt="One-step t=0.75"><figcaption>t = 0.75</figcaption></figure>
+
+<h2>Visualizing Velocity</h2>
+<p>
+  I compared the predicted update (1 &minus; t) v with the true update (1 &minus; t)(x &minus; &epsilon;). They
+  look almost identical. The error sits mostly along the edges and shrinks as t increases.
+</p>
+<figure><img src="images/a_original.png" alt="Original penguin" style="max-width:260px;margin:0 auto;"><figcaption>Original</figcaption></figure>
+<figure><img src="images/a_velocity_025.png" alt="Velocity t=0.25"></figure>
+<figure><img src="images/a_velocity_050.png" alt="Velocity t=0.5"></figure>
+<figure><img src="images/a_velocity_075.png" alt="Velocity t=0.75"></figure>
+
+<h2>Iterative Denoising with Euler Sampling</h2>
+<p>
+  Euler sampling takes small steps and predicts a new velocity after each one. Over 25 steps from t = 0.5 to 1,
+  the noise fades and the penguin comes back almost exactly, including the fine detail one-step was missing.
+</p>
+<figure><img src="images/a_euler_steps.png" alt="Euler trajectory"><figcaption>Start, every fifth step, and final image</figcaption></figure>
+<figure><img src="images/a_compare.png" alt="Comparison of denoising methods"><figcaption>Original, Gaussian blur, one-step, and Euler denoising</figcaption></figure>
+
+<h2>Generating Images from Noise</h2>
+<p>
+  Here, we start Euler sampling from pure noise at t = 0 to generate new images. Using the prompt
+  <span class="prompt">a high quality photo</span>, all five samples are portraits of people, so this generic prompt
+  strongly favors faces. Some look realistic (182 and 184), but others are distorted or warped faces (180 and 183).
+</p>
+<figure><img src="images/a_samples.png" alt="Five samples from pure noise"></figure>
+
+<h2>Classifier-Free Guidance</h2>
+<p>
+  With classifier-free guidance (w = 7), I combine the conditional and unconditional velocities using the formula
+  v = v<sub>u</sub> + w(v<sub>c</sub> &minus; v<sub>u</sub>). Using the same starting noise, every image is now a
+  clean and realistic face without distortion, but overall they're less varied and are all centered and front facing with similar lighting.
+</p>
+<figure><img src="images/a_cfg.png" alt="CFG samples"></figure>
+
+<h2>Image-to-Image Editing</h2>
+<p>
+  Here, we add noise to a real image and then denoise it allowing the model to make edits. Smaller starting times add more
+  noise and give bigger changes, while larger starting times stay closer to the original.
+</p>
+<figure><img src="images/a_edit_campanile.png" alt="Campanile edits"><figcaption>Campanile.</figcaption></figure>
+<figure><img src="images/a_edit_own1.png" alt="Penguin edits"><figcaption>Penguin.</figcaption></figure>
+<figure><img src="images/a_edit_own2.png" alt="Mountain lake edits"><figcaption>Mountain lake.</figcaption></figure>
+
+<h2>Editing Web and Hand-Drawn Images</h2>
+<p>
+  This works especially well if we start with nonrealistic images and project them onto the natural image manifold.
+</p>
+<figure><img src="images/a_edit_web.png" alt="Painting edits"><figcaption>Painting of a coastal village.</figcaption></figure>
+<figure><img src="images/a_edit_drawn1.png" alt="Charon drawing edits"><figcaption>Hand-drawn Charon.</figcaption></figure>
+<figure><img src="images/a_edit_drawn2.png" alt="Pumpkin drawing edits"><figcaption>Hand-drawn pumpkin.</figcaption></figure>
+
+<h2>Text-Guided Image Editing</h2>
+<p>
+  Here, we perform the same editing process, but with custom prompts instead of <span class="prompt">a high quality photo</span>, so the edit moves toward
+  what the prompt describes.
+</p>
+<figure><img src="images/a_text_campanile.png" alt="Campanile to cactus"><figcaption>Prompt: <span class="prompt">a photograph of a cactus in the desert</span>.</figcaption></figure>
+<figure><img src="images/a_text_own1.png" alt="Penguin to owl"><figcaption>Prompt: <span class="prompt">a photograph of an owl perched on a branch</span>.</figcaption></figure>
+<figure><img src="images/a_text_own2.png" alt="Mountain lake to volcano"><figcaption>Prompt: <span class="prompt">a photograph of a volcano erupting</span>.</figcaption></figure>
+
+<h2>Visual Anagrams</h2>
+<p>
+  To create visual anagrams, at each step, I predict the velocity for one prompt on the image, and for a second prompt on the image rotated
+  180&deg;. I rotate the second velocity back and average the two, so the result shows one prompt upright and the
+  other upside down.
+</p>
+<figure><img src="images/a_anagram1.png" alt="Ship / dog anagram"><figcaption>Upright: <span class="prompt">an oil painting of a ship at sea</span>
+  / Flipped: <span class="prompt">an oil painting of a dog</span>.</figcaption></figure>
+<figure><img src="images/a_anagram2.png" alt="Castle / owl anagram"><figcaption>Upright: <span class="prompt">a lithograph of a castle</span>
+  / Flipped: <span class="prompt">a lithograph of an owl</span>.</figcaption></figure>
+
+<h2>Hybrid Images</h2>
+<p>
+  To create hybrid images, at each step, I combine the low frequencies of one prompt's velocity with the high frequencies of another's,
+  using a Gaussian blur (kernel 265, &sigma; = 16). Up close you see one prompt, and from far away you see the other.
+</p>
+<div class="hybrid">
+  <figure class="near"><img src="images/a_hybrid1.png" alt="Hybrid 1 near"><figcaption>Near: <span class="prompt">a lithograph of ocean waves</span></figcaption></figure>
+  <figure class="far"><img src="images/a_hybrid1.png" alt="Hybrid 1 far"><figcaption>Far: <span class="prompt">a lithograph of a horse</span></figcaption></figure>
+</div>
+<div class="hybrid">
+  <figure class="near"><img src="images/a_hybrid2.png" alt="Hybrid 2 near"><figcaption>Near: <span class="prompt">a lithograph of a forest</span></figcaption></figure>
+  <figure class="far"><img src="images/a_hybrid2.png" alt="Hybrid 2 far"><figcaption>Far: <span class="prompt">a lithograph of an owl</span></figcaption></figure>
+</div>
+
+<h1 class="part">Project 5B: Flow Matching from Scratch</h1>
+
+<h2>Noising Process</h2>
+<p>
+  Here, I made noisy images by adding Gaussian noise to clean digits using the formula z = x + &sigma;&epsilon;. As &sigma; increases,
+  the digits become harder to see.
+</p>
+<figure>
+  <img src="images/noising_process.png" alt="Noising process at different sigma levels">
+</figure>
+
+<h2>Single-Step Denoiser</h2>
+<p>
+  I trained the UNet to remove noise at &sigma; = 0.5 using an L2 loss, Adam with a learning rate of
+  1e-4, and batch size 256 for 5 epochs.
+</p>
+<figure>
+  <img src="images/denoise_loss.png" alt="denoise_loss">
+  <figcaption>Training loss</figcaption>
+</figure>
+<figure><img src="images/denoise_epoch1.png" alt="denoise_epoch1"><figcaption>Epoch 1</figcaption></figure>
+<figure><img src="images/denoise_epoch5.png" alt="denoise_epoch5"><figcaption>Epoch 5</figcaption></figure>
+
+<h2>Out-of-Distribution Noise</h2>
+<p>
+  Here, we observe testing on noise levels the model wasn't trained on (each pair of rows is the noisy input and the
+  denoised output), still gives clean digits up to &sigma; = 0.6 before the digits devolve.
+</p>
+<figure>
+  <img src="images/denoise_ood.png" alt="Out-of-distribution denoising" style="max-width:560px;margin:0 auto;">
+</figure>
+
+<h2>Denoising Pure Noise</h2>
+<p>
+  Here, I retrained the model with pure noise as input and found that every output is the same blurry gray shape no matter the
+  input. Since pure noise tells the model nothing about the target digit, the MSE loss pushes it
+  to predict the average of all training images, so it outputs the mean digit every time.
+</p>
+<figure>
+  <img src="images/pure_noise_loss.png" alt="pure_noise_loss">
+  <figcaption>Training loss</figcaption>
+</figure>
+<figure><img src="images/pure_noise_epoch1.png" alt="pure_noise_epoch1"><figcaption>Epoch 1</figcaption></figure>
+<figure><img src="images/pure_noise_epoch5.png" alt="pure_noise_epoch5"><figcaption>Epoch 5</figcaption></figure>
+
+<h2>Time-Conditioned Flow Matching</h2>
+<p>
+  Here, instead of denoising in one step, I trained a UNet to predict the flow from noise to a clean digit,
+  conditioned on the timestep t. I used Adam at 1e-2 with an exponential learning rate decay.
+</p>
+<figure>
+  <img src="images/time_loss.png" alt="time_loss">
+  <figcaption>Training loss</figcaption>
+</figure>
+<figure><img src="images/time_epoch1.png" alt="time_epoch1"><figcaption>Epoch 1</figcaption></figure>
+<figure><img src="images/time_epoch5.png" alt="time_epoch5"><figcaption>Epoch 5</figcaption></figure>
+<figure><img src="images/time_epoch10.png" alt="time_epoch10"><figcaption>Epoch 10</figcaption></figure>
+<p>
+  After 1 epoch, the samples are just scribbles but by epoch 5, many are recognizable, and by epoch 10,
+  most are legible digits, though some are still malformed since the model doesn't know which digit to draw.
+</p>
+
+<h2>Class-Conditioned Flow Matching</h2>
+<p>
+  Here, I additionally conditioned the UNet on the digit class, dropping the class 10% of the time so it can still generate
+  unconditionally.
+</p>
+<figure>
+  <img src="images/class_loss.png" alt="class_loss">
+  <figcaption>Training loss</figcaption>
+</figure>
+<figure><img src="images/class_epoch1.png" alt="class_epoch1"><figcaption>Epoch 1</figcaption></figure>
+<figure><img src="images/class_epoch5.png" alt="class_epoch5"><figcaption>Epoch 5</figcaption></figure>
+<figure><img src="images/class_epoch10.png" alt="class_epoch10"><figcaption>Epoch 10</figcaption></figure>
+<p>
+  Each row shows digits 0 through 9. Time and class conditioning converges much faster than time only: every digit is
+  already roughly recognizable after 1 epoch, and by epochs 5 and 10, they are clean and sharp.
+</p>
+
+
+</body>
+</html>
